@@ -65,6 +65,35 @@ Open **Edit > Preferences > External Tools** and set **External Script Editor** 
 
 Configure which project types should have `.csproj` files generated, then click **Regenerate project files**.
 
+The **Inject solution path (recommended)** toggle controls whether the package automatically writes the solution file path into `.zed/settings.json`. This tells the Roslyn language server to load only your project's solution instead of scanning all packages, which prevents go-to-definition (F12) timeouts. Leave it enabled unless you manage `.zed/settings.json` manually.
+
+## Troubleshooting
+
+### Go-to-definition (F12) stops working or Zed becomes unresponsive
+
+This happens when Roslyn has no `.sln` file to anchor to and scans hundreds of package `.csproj` files instead, causing 120s request timeouts.
+
+**Fix:**
+1. In Unity, open **Edit > Preferences > External Tools**
+2. Make sure **Inject solution path (recommended)** is enabled
+3. Click **Regenerate project files**
+
+This creates the `.sln` and updates `.zed/settings.json` with:
+
+```json
+{
+  "lsp": {
+    "roslyn": {
+      "initialization_options": {
+        "solutionPath": "YourProject.sln"
+      }
+    }
+  }
+}
+```
+
+Restart Zed after regenerating. The first load takes ~30s while Roslyn indexes the solution.
+
 ## Acknowledgements
 
 Forked from [Maligan/unity-zed](https://github.com/Maligan/unity-zed).

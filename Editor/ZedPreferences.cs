@@ -42,6 +42,16 @@ namespace UnityZed
             SettingsButton(ProjectGenerationFlag.PlayerAssemblies, "Player projects", "For each player project generate an additional csproj with the name 'project-player.csproj'", m_Generator);
             RegenerateProjectFiles(m_Generator);
             EditorGUI.indentLevel--;
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Roslyn Language Server", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            ZedSettings.InjectSolutionPath = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Inject solution path (recommended)",
+                    "Automatically writes the .sln file path into .zed/settings.json so Roslyn loads only your project instead of scanning all packages. Fixes go-to-definition (F12) timeouts and crashes."),
+                ZedSettings.InjectSolutionPath);
+            EditorGUI.indentLevel--;
         }
 
         private static void RegenerateProjectFiles(IGenerator generator)

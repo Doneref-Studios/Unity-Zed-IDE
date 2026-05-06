@@ -1,7 +1,7 @@
 using UnityEngine;
 using NiceIO;
 using SimpleJSON;
-using System;
+using System.IO;
 
 namespace UnityZed
 {
@@ -9,11 +9,21 @@ namespace UnityZed
     {
         private static readonly ILogger sLogger = ZedLogger.Create();
 
+        private const string kInjectSolutionPathKey = "UnityZed.InjectSolutionPath";
+
+        public static bool InjectSolutionPath
+        {
+            get => UnityEditor.EditorPrefs.GetBool(kInjectSolutionPathKey, true);
+            set => UnityEditor.EditorPrefs.SetBool(kInjectSolutionPathKey, value);
+        }
+
         private readonly NPath m_SettingsPath;
+        private readonly NPath m_ProjectRoot;
 
         public ZedSettings()
         {
-            m_SettingsPath = new NPath(Application.dataPath).Parent.Combine(".zed/settings.json");
+            m_ProjectRoot = new NPath(UnityEngine.Application.dataPath).Parent;
+            m_SettingsPath = m_ProjectRoot.Combine(".zed/settings.json");
         }
 
         public void Sync()
@@ -24,6 +34,33 @@ namespace UnityZed
                 m_SettingsPath.CreateFile();
                 m_SettingsPath.WriteAllText(JSON.Parse(kDefaultSettings).ToString());
             }
+
+            if (InjectSolutionPath)
+                SyncSolutionPath();
+        }
+
+        private void SyncSolutionPath()
+        {
+            var slnFiles = m_ProjectRoot.Files("*.sln");
+            if (slnFiles.Length == 0)
+                return;
+
+            var slnName = slnFiles[0].FileName;
+
+            var json = JSON.Parse(m_SettingsPath.ReadAllText()) ?? new JSONObject();
+
+            if (json["lsp"] == null) json["lsp"] = new JSONObject();
+            if (json["lsp"]["roslyn"] == null) json["lsp"]["roslyn"] = new JSONObject();
+            if (json["lsp"]["roslyn"]["initialization_options"] == null)
+                json["lsp"]["roslyn"]["initialization_options"] = new JSONObject();
+
+            var current = json["lsp"]["roslyn"]["initialization_options"]["solutionPath"]?.Value;
+            if (current == slnName)
+                return;
+
+            json["lsp"]["roslyn"]["initialization_options"]["solutionPath"] = slnName;
+            m_SettingsPath.WriteAllText(json.ToString());
+            sLogger.Log($"Zed settings: solutionPath set to '{slnName}'.");
         }
 
         private const string kDefaultSettings = @"{
