@@ -1,8 +1,9 @@
 {
-  "name": "com.maligan.unity-zed",
-  "displayName": "Zed Editor",
-  "description": "Zed Editor integration for Unity",
-  "version": "0.2.3-preview",
+  "name": "com.doneref.unity-zed-ide",
+  "displayName": "Zed IDE",
+  "description": "Integrates the Zed code editor as Unity's external script editor with full support for C# project generation on Windows, macOS, and Linux.",
+  "version": "1.0.0",
+  "unity": "2022.3",
   "dependencies": {
     "com.unity.ide.visualstudio": "2.0.20"
   }
