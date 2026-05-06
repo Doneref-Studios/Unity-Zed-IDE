@@ -25,15 +25,10 @@ namespace UnityZed
             // always add project path
             var args = new StringBuilder($"\"{m_ProjectPath.ToString(SlashMode.Native)}\"");
 
-            // if file path is provided, add it too
+            // if file path is provided, add it as a second positional argument
             if (!string.IsNullOrEmpty(filePath))
             {
-#if UNITY_EDITOR_WIN
-                args.Append(" /a ");
-#else
-                args.Append(" -a ");
-#endif
-                args.Append($"\"{filePath}");
+                args.Append($" \"{filePath}");
 
                 if (line >= 0)
                 {
@@ -49,7 +44,21 @@ namespace UnityZed
                 args.Append("\"");
             }
 
+#if UNITY_EDITOR_WIN
+            // On Windows, CodeEditor.OSOpenFile shows a console window for CLI executables.
+            // Use Process.Start directly with CreateNoWindow to suppress it.
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = m_ExecPath.ToString(SlashMode.Native),
+                Arguments = args.ToString(),
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            System.Diagnostics.Process.Start(startInfo);
+            return true;
+#else
             return CodeEditor.OSOpenFile(m_ExecPath.ToString(SlashMode.Native), args.ToString());
+#endif
         }
     }
 }
