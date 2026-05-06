@@ -1,17 +1,17 @@
 # Unity Zed IDE
 
-[![openupm](https://img.shields.io/npm/v/com.maligan.unity-zed?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.maligan.unity-zed/)
 ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
 ![Unity](https://img.shields.io/badge/Unity-2022.3%2B-orange)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
 
-Integrates the [Zed](https://zed.dev) code editor as the external script editor in Unity, with full support for C# project generation and file-open workflows across **Windows**, **macOS**, and **Linux**.
+A Unity package by **[Doneref Studios](https://github.com/Doneref-Studios)** that integrates the [Zed](https://zed.dev) code editor as Unity's external script editor, with full support for C# project generation and file-open workflows across **Windows**, **macOS**, and **Linux**.
 
 ## Features
 
-- **Auto-discovery** — Automatically detects Zed installations on all supported platforms
-- **C# project generation** — Generates `.sln` and `.csproj` files via the Visual Studio package backend
-- **File navigation** — Opens files at the correct line and column directly from Unity's console or double-clicking assets
-- **Preferences UI** — Configure project generation options from Unity's Preferences window
+- **Auto-discovery** - Automatically detects Zed installations on all supported platforms
+- **C# project generation** - Generates `.sln` and `.csproj` files via the Visual Studio package backend
+- **File navigation** - Opens files at the correct line and column directly from Unity's console or by double-clicking assets
+- **Preferences UI** - Configure project generation options from Unity's Preferences window
 
 ## Platform Support
 
@@ -29,38 +29,47 @@ Integrates the [Zed](https://zed.dev) code editor as the external script editor 
 
 ## Installation
 
-**Via Unity Package Manager (Git URL)**
+### 1. Install the package
 
-In your project's `Packages/manifest.json`, add:
+Open **Window > Package Management > Package Manager**, click the **+** button in the top-left corner, and select **Install package from git URL...**
 
-```json
-"com.doneref.unity-zed-ide": "https://github.com/Doneref-Studios/Unity-Zed-IDE.git"
+![Package Manager install from git URL](https://raw.githubusercontent.com/Doneref-Studios/Unity-Zed-IDE/main/.github/images/install.png)
+
+Paste the following URL and click **Install**:
+
+```
+https://github.com/Doneref-Studios/Unity-Zed-IDE.git
 ```
 
-Or open the Package Manager window, choose **Add package from git URL…**, and paste the URL above.
+Wait for Unity to download and compile the package.
 
-**Directly in Assets**
+### 2. Install the Zed C# extension
 
-Copy the `Editor/` folder into `Assets/Plugins/unity-zed/`. The `.asmdef` will ensure the scripts are compiled only for the Editor.
+Open Zed, press `Ctrl+Shift+X` to open the extension panel, search for **C#**, and install it.
+Alternatively, visit the extension page: [zed-extensions/csharp](https://github.com/zed-extensions/csharp)
 
-## Setup
+The C# extension uses the **Roslyn** language server, which requires the **.NET 10 runtime**.
+Download and install it from:
 
-1. Open **Edit → Preferences → External Tools**
-2. Set **External Script Editor** to **Zed**
-3. Configure which project types should have `.csproj` files generated under the Zed preferences section
+```
+https://dotnet.microsoft.com/download/dotnet/10.0
+```
 
-## Roadmap
+Without .NET 10, features like go-to-definition (F12), auto-complete, and inline diagnostics will not work.
 
-- [x] Zed installation discovery (Windows, macOS, Linux)
-- [x] Register as Unity external script editor
-- [x] C# `.sln` / `.csproj` generation
-- [x] Correct file / line / column open workflow on all platforms
-- [x] Graceful fallback when not running as a Unity package
-- [ ] Zed extension for deeper Unity integration via LSP/IPC
+### 3. Set Zed as your script editor
+
+Open **Edit > Preferences > External Tools** and set **External Script Editor** to **Zed**.
+
+![External Tools preferences showing Zed selected](https://raw.githubusercontent.com/Doneref-Studios/Unity-Zed-IDE/main/.github/images/preferences.png)
+
+Configure which project types should have `.csproj` files generated, then click **Regenerate project files**.
 
 ## Acknowledgements
 
-Forked from [Maligan/unity-zed](https://github.com/Maligan/unity-zed). Windows process and path fixes contributed by the upstream community (see [PR #16](https://github.com/Maligan/unity-zed/pull/16)).
+Forked from [Maligan/unity-zed](https://github.com/Maligan/unity-zed).
+
+Windows process and path fixes contributed by the upstream community (see [PR #16](https://github.com/Maligan/unity-zed/pull/16)).
 
 ## License
 
