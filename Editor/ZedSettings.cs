@@ -10,11 +10,34 @@ namespace UnityZed
         private static readonly ILogger sLogger = ZedLogger.Create();
 
         private const string kInjectSolutionPathKey = "UnityZed.InjectSolutionPath";
+        private const string kInjectUnityMcpKey = "UnityZed.InjectUnityMcp";
 
         public static bool InjectSolutionPath
         {
             get => UnityEditor.EditorPrefs.GetBool(kInjectSolutionPathKey, true);
             set => UnityEditor.EditorPrefs.SetBool(kInjectSolutionPathKey, value);
+        }
+
+        public static bool InjectUnityMcp
+        {
+            get => UnityEditor.EditorPrefs.GetBool(kInjectUnityMcpKey, false);
+            set => UnityEditor.EditorPrefs.SetBool(kInjectUnityMcpKey, value);
+        }
+
+        private static NPath GetRelayPath()
+        {
+            var home = new NPath(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
+#if UNITY_EDITOR_WIN
+            return home.Combine(".unity/relay/relay_win.exe");
+#elif UNITY_EDITOR_OSX
+            var arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture;
+            if (arch == System.Runtime.InteropServices.Architecture.Arm64)
+                return home.Combine(".unity/relay/relay_mac_arm64.app/Contents/MacOS/relay_mac_arm64");
+            else
+                return home.Combine(".unity/relay/relay_mac_x64.app/Contents/MacOS/relay_mac_x64");
+#else
+            return home.Combine(".unity/relay/relay_linux");
+#endif
         }
 
         private readonly NPath m_SettingsPath;
@@ -37,6 +60,52 @@ namespace UnityZed
 
             if (InjectSolutionPath)
                 SyncSolutionPath();
+
+            SyncUnityMcp();
+        }
+
+        private void SyncUnityMcp()
+        {
+            var json = JSON.Parse(m_SettingsPath.ReadAllText()) ?? new JSONObject();
+
+            if (InjectUnityMcp)
+            {
+                var relayPath = GetRelayPath();
+                if (!relayPath.FileExists())
+                {
+                    sLogger.Log($"Unity MCP relay not found at '{relayPath}'. Is the Unity AI Assistant package installed?");
+                    return;
+                }
+
+                var relayPathStr = relayPath.ToString(SlashMode.Native);
+
+                if (json["context_servers"] == null) json["context_servers"] = new JSONObject();
+                if (json["context_servers"]["unity-mcp"] == null) json["context_servers"]["unity-mcp"] = new JSONObject();
+
+                var entry = json["context_servers"]["unity-mcp"];
+                var currentCommand = entry["command"]?.Value;
+                var currentArg = entry["args"]?.Count == 1 ? entry["args"][0]?.Value : null;
+
+                if (currentCommand == relayPathStr && currentArg == "--mcp")
+                    return;
+
+                entry["command"] = relayPathStr;
+                var args = new JSONArray();
+                args.Add("--mcp");
+                entry["args"] = args;
+
+                m_SettingsPath.WriteAllText(json.ToString());
+                sLogger.Log($"Zed settings: Unity MCP server configured (relay: '{relayPathStr}').");
+            }
+            else
+            {
+                if (json["context_servers"] == null || json["context_servers"]["unity-mcp"] == null)
+                    return;
+
+                json["context_servers"].Remove("unity-mcp");
+                m_SettingsPath.WriteAllText(json.ToString());
+                sLogger.Log("Zed settings: Unity MCP server entry removed.");
+            }
         }
 
         private void SyncSolutionPath()

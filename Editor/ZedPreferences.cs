@@ -52,6 +52,16 @@ namespace UnityZed
                     "Automatically writes the .sln file path into .zed/settings.json, which tells the Roslyn language server to load only your Unity project solution instead of scanning all packages."),
                 ZedSettings.InjectSolutionPath);
             EditorGUI.indentLevel--;
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Unity MCP", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            ZedSettings.InjectUnityMcp = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Inject Unity MCP server",
+                    "Automatically adds the Unity AI Assistant relay as a context server in .zed/settings.json, making Unity MCP tools available to Zed's AI agent. Requires the Unity AI Assistant package (com.unity.ai.assistant) to be installed."),
+                ZedSettings.InjectUnityMcp);
+            EditorGUI.indentLevel--;
         }
 
         private static void RegenerateProjectFiles(IGenerator generator)
