@@ -206,6 +206,7 @@ namespace UnityZed
                 ""Library/"",
                 ""obj/"",
                 ""Obj/"",
+                ""Packages/"",
                 ""ProjectSettings/"",
                 ""UserSettings/"",
                 ""temp/"",

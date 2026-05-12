@@ -67,7 +67,19 @@ Configure which project types should have `.csproj` files generated, then click 
 
 The **Inject solution path (recommended)** toggle controls whether the package automatically writes the solution file path into `.zed/settings.json`. This tells the Roslyn language server to load only your project's solution instead of scanning all packages, which prevents go-to-definition (F12) timeouts. Leave it enabled unless you manage `.zed/settings.json` manually.
 
+The **Inject Unity MCP** toggle (disabled by default) writes the Unity MCP relay (`unity-mcp` context server) into Zed's **global** settings file. This is an alternative to installing the [Zed-Unity-MCP](https://github.com/Doneref-Studios/Zed-Unity-MCP) extension.
+
+> ⚠️ **Do not enable both.** If you have the **Zed-Unity-MCP** extension installed, leave **Inject Unity MCP** disabled. Enabling both causes `unity-mcp` to be registered twice, which crashes Zed on Windows.
+
 ## Troubleshooting
+
+### Zed crashes shortly after opening the project (Windows)
+
+This is caused by `unity-mcp` being registered twice — once by the **Zed-Unity-MCP** extension and once by either a manual `context_servers` entry in `.zed/settings.json` or **Inject Unity MCP** being enabled. Zed crashes with a flood of `window not found` errors in its log.
+
+**Fix:**
+- If you use the **Zed-Unity-MCP** extension, disable **Inject Unity MCP** in **Edit > Preferences > External Tools**.
+- Remove any manually added `context_servers` block from your project's `.zed/settings.json`.
 
 ### Go-to-definition (F12) stops working or Zed becomes unresponsive
 
