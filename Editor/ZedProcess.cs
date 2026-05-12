@@ -22,13 +22,14 @@ namespace UnityZed
         {
             sLogger.Log("OpenProject");
 
-            // always add project path
-            var args = new StringBuilder($"\"{m_ProjectPath.ToString(SlashMode.Native)}\"");
+            StringBuilder args;
 
-            // if file path is provided, add it as a second positional argument
             if (!string.IsNullOrEmpty(filePath))
             {
-                args.Append($" \"{filePath}");
+                // Pass only the file path so Zed detects the project root via .zed/ or .git/
+                // rather than treating the project folder and file as two separate workspace roots.
+                var nativePath = new NPath(filePath).ToString(SlashMode.Native);
+                args = new StringBuilder($"\"{nativePath}");
 
                 if (line >= 0)
                 {
@@ -42,6 +43,10 @@ namespace UnityZed
                     }
                 }
                 args.Append("\"");
+            }
+            else
+            {
+                args = new StringBuilder($"\"{m_ProjectPath.ToString(SlashMode.Native)}\"");
             }
 
 #if UNITY_EDITOR_WIN

@@ -49,7 +49,7 @@ namespace UnityZed
             ZedSettings.InjectSolutionPath = EditorGUILayout.Toggle(
                 new GUIContent(
                     "Inject solution path (recommended)",
-                    "Automatically writes the .sln file path into .zed/settings.json so Roslyn loads only your project instead of scanning all packages. Fixes go-to-definition (F12) timeouts and crashes."),
+                    "Automatically writes the .sln file path into .zed/settings.json, which tells the Roslyn language server to load only your Unity project solution instead of scanning all packages."),
                 ZedSettings.InjectSolutionPath);
             EditorGUI.indentLevel--;
         }
