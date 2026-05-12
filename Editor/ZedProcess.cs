@@ -22,14 +22,16 @@ namespace UnityZed
         {
             sLogger.Log("OpenProject");
 
-            StringBuilder args;
+            // Always pass the project folder first so Zed uses it as the workspace root.
+            // Normalize both paths to native slashes — mixing styles (e.g. C:\project vs
+            // C:/Assets/Script.cs) causes Zed on Windows to treat them as unrelated paths
+            // and open two separate workspace roots instead of one.
+            var args = new StringBuilder($"\"{m_ProjectPath.ToString(SlashMode.Native)}\"");
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                // Pass only the file path so Zed detects the project root via .zed/ or .git/
-                // rather than treating the project folder and file as two separate workspace roots.
                 var nativePath = new NPath(filePath).ToString(SlashMode.Native);
-                args = new StringBuilder($"\"{nativePath}");
+                args.Append($" \"{nativePath}");
 
                 if (line >= 0)
                 {
@@ -43,10 +45,6 @@ namespace UnityZed
                     }
                 }
                 args.Append("\"");
-            }
-            else
-            {
-                args = new StringBuilder($"\"{m_ProjectPath.ToString(SlashMode.Native)}\"");
             }
 
 #if UNITY_EDITOR_WIN
