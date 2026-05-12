@@ -40,6 +40,19 @@ namespace UnityZed
 #endif
         }
 
+        // Global Zed settings file — this is where context_servers must live for the AI agent to pick them up.
+        // Project-level .zed/settings.json is only for editor config (LSP, themes, etc.).
+        private static NPath GetGlobalZedSettingsPath()
+        {
+#if UNITY_EDITOR_WIN
+            return new NPath(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData))
+                .Combine("Zed/settings.json");
+#else
+            return new NPath(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile))
+                .Combine(".config/zed/settings.json");
+#endif
+        }
+
         private readonly NPath m_SettingsPath;
         private readonly NPath m_ProjectRoot;
 
@@ -66,7 +79,14 @@ namespace UnityZed
 
         private void SyncUnityMcp()
         {
-            var json = JSON.Parse(m_SettingsPath.ReadAllText()) ?? new JSONObject();
+            var globalSettingsPath = GetGlobalZedSettingsPath();
+            if (!globalSettingsPath.FileExists())
+            {
+                sLogger.Log($"Global Zed settings not found at '{globalSettingsPath}'. Is Zed installed?");
+                return;
+            }
+
+            var json = JSON.Parse(globalSettingsPath.ReadAllText()) ?? new JSONObject();
 
             if (InjectUnityMcp)
             {
@@ -94,8 +114,8 @@ namespace UnityZed
                 args.Add("--mcp");
                 entry["args"] = args;
 
-                m_SettingsPath.WriteAllText(json.ToString());
-                sLogger.Log($"Zed settings: Unity MCP server configured (relay: '{relayPathStr}').");
+                globalSettingsPath.WriteAllText(json.ToString());
+                sLogger.Log($"Zed settings: Unity MCP server configured in global settings (relay: '{relayPathStr}').");
             }
             else
             {
@@ -103,8 +123,8 @@ namespace UnityZed
                     return;
 
                 json["context_servers"].Remove("unity-mcp");
-                m_SettingsPath.WriteAllText(json.ToString());
-                sLogger.Log("Zed settings: Unity MCP server entry removed.");
+                globalSettingsPath.WriteAllText(json.ToString());
+                sLogger.Log("Zed settings: Unity MCP server entry removed from global settings.");
             }
         }
 
